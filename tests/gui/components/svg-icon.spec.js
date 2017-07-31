@@ -34,18 +34,24 @@ describe('Browser: SVGIcon', function() {
       // Modify here to ease assertions later on.
       iconContents[0] = `<!--${iconContents[0].slice(1, iconContents[0].length - 1)}-->`;
       iconContents = iconContents.join('\n');
+      const img = `<img src="data:image/svg+xml,${encodeURIComponent(iconContents)}">`;
 
       const element = $compile(`<svg-icon path="'${icon}'">Resin.io</svg-icon>`)($rootScope);
       $rootScope.$digest();
-      m.chai.expect(element.children().html()).to.equal(iconContents);
+      console.log(decodeURIComponent(element.children().html()));
+      console.log('=');
+      console.log(decodeURIComponent(img));
+      m.chai.expect(element.children().html()).to.equal(img);
     });
 
     it('should accept an SVG in the path attribute', function() {
-      const iconContents = '<svg><rect x="10" y="10" height="100" width="100" style="stroke:red;fill:blue"></rect></svg>';
+      const iconContents = '<svg><rect x="10" y="10" height="100" width="100" style="stroke:red;fill:blue;"/></svg>';
+      const img = `<img src="data:image/svg+xml,${encodeURIComponent(iconContents)}">`;
       $rootScope.iconContents = iconContents;
+
       const element = $compile('<svg-icon path="iconContents">Resin.io</svg-icon>')($rootScope);
       $rootScope.$digest();
-      m.chai.expect(element.children().html()).to.equal(iconContents);
+      m.chai.expect(element.children().html()).to.equal(img);
     });
 
     it('should default the size to 40x40 pixels', function() {
