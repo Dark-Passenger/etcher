@@ -33,15 +33,28 @@ APPLICATION_COPYRIGHT = $(shell cat electron-builder.yml | shyaml get-value copy
 # Add the current commit to the version if release type is "snapshot"
 RELEASE_TYPE ?= snapshot
 PACKAGE_JSON_VERSION = $(shell jq -r '.version' package.json)
+
+# For backwards compatibility purposes, until we
+# completely migrate to this new release type scheme
 ifeq ($(RELEASE_TYPE),production)
+RELEASE_TYPE=regular
+endif
+
+ifeq ($(RELEASE_TYPE),regular)
 APPLICATION_VERSION = $(PACKAGE_JSON_VERSION)
 S3_BUCKET = resin-production-downloads
 endif
+
+ifeq ($(RELEASE_TYPE),update)
+APPLICATION_VERSION = $(PACKAGE_JSON_VERSION)
+S3_BUCKET = resin-production-downloads
+endif
+
 ifeq ($(RELEASE_TYPE),snapshot)
-CURRENT_COMMIT_HASH = $(shell git log -1 --format="%h")
-APPLICATION_VERSION = $(PACKAGE_JSON_VERSION)+$(CURRENT_COMMIT_HASH)
+APPLICATION_VERSION = $(PACKAGE_JSON_VERSION)+$(shell git log -1 --format="%h")
 S3_BUCKET = resin-nightly-downloads
 endif
+
 ifndef APPLICATION_VERSION
 $(error Invalid release type: $(RELEASE_TYPE))
 endif
@@ -442,13 +455,6 @@ installers-all: $(PUBLISH_AWS_S3) $(PUBLISH_BINTRAY_DEBIAN) $(PUBLISH_BINTRAY_RE
 
 ifdef PUBLISH_AWS_S3
 publish-aws-s3: $(PUBLISH_AWS_S3)
-ifeq ($(RELEASE_TYPE),production)
-	$(foreach publishable,$^,$(call execute-command,./scripts/publish/aws-s3.sh \
-		-f $(publishable) \
-		-b $(S3_BUCKET) \
-		-v $(APPLICATION_VERSION) \
-		-p $(PRODUCT_NAME)))
-endif
 ifeq ($(RELEASE_TYPE),snapshot)
 	$(foreach publishable,$^,$(call execute-command,./scripts/publish/aws-s3.sh \
 		-f $(publishable) \
@@ -456,6 +462,12 @@ ifeq ($(RELEASE_TYPE),snapshot)
 		-v $(APPLICATION_VERSION) \
 		-p $(PRODUCT_NAME) \
 		-k $(shell date +"%Y-%m-%d")))
+else
+	$(foreach publishable,$^,$(call execute-command,./scripts/publish/aws-s3.sh \
+		-f $(publishable) \
+		-b $(S3_BUCKET) \
+		-v $(APPLICATION_VERSION) \
+		-p $(PRODUCT_NAME)))
 endif
 
 TARGETS += publish-aws-s3

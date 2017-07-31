@@ -7,26 +7,23 @@ systems.
 Release Types
 -------------
 
-Etcher supports **production** and **snapshot** release types. Each is
-published to a different S3 bucket, and production release types are code
-signed, while snapshot release types aren't and include a short git commit-hash
-as a build number. For example, `1.0.0-beta.19` is a production release type,
-while `1.0.0-beta.19+531ab82` is a snapshot release type.
+Etcher supports the following release types:
 
-In terms of comparison: `1.0.0-beta.19` (production) < `1.0.0-beta.19+531ab82`
-(snapshot) < `1.0.0-rc.1` (production) < `1.0.0-rc.1+7fde24a` (snapshot) <
-`1.0.0` (production) < `1.0.0+2201e5f` (snapshot). Keep in mind that if you're
-running a production release type, you'll only be prompted to update to
-production release types, and if you're running a snapshot release type, you'll
-only be prompted to update to other snapshot release types.
+- **Snapshot**: A development release, for which the shorter git commit hash is
+  appended to the version
+
+- **Regular**: A release that doesn't trigger the auto update functionality
+
+- **Update**: A release that triggers the auto update functionality
 
 The build system creates (and publishes) snapshot release types by default, but
 you can build a specific release type by setting the `RELEASE_TYPE` make
-variable.  For example:
+variable. For example:
 
 ```sh
 make <target> RELEASE_TYPE=snapshot
-make <target> RELEASE_TYPE=production
+make <target> RELEASE_TYPE=regular
+make <target> RELEASE_TYPE=update
 ```
 
 We can control the version range a specific Etcher version will consider when
@@ -38,13 +35,13 @@ Update Channels
 
 Etcher has a setting to include the unstable update channel. If this option is
 set, Etcher will consider both stable and unstable versions when showing the
-update notifier dialog. Unstable versions are the ones that contain a `beta`
-pre-release tag. For example:
+update notifier dialog. Unstable versions are the ones built using
+`RELEASE_TYPE=snapshot`, or the ones that have a pre-release semver tag. For
+example:
 
-- Production unstable version: `1.4.0-beta.1`
-- Snapshot unstable version: `1.4.0-beta.1+7fde24a`
-- Production stable version: `1.4.0`
-- Snapshot stable version: `1.4.0+7fde24a`
+- Stable version: `1.4.0`
+- Unstable version: `1.4.0-beta.1`
+- Unstable version: `1.4.0+7fde24a`
 
 Signing
 -------

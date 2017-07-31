@@ -71,7 +71,7 @@ if [ -z "$BINTRAY_USER" ] || [ -z "$BINTRAY_API_KEY" ]; then
 fi
 set -u
 
-if [ "$ARGV_RELEASE_TYPE" == "production" ]; then
+if [ "$ARGV_RELEASE_TYPE" == "regular" ] || [ "$ARGV_RELEASE_TYPE" == "update" ]; then
   PACKAGE_DISTRIBUTION=stable
 elif [ "$ARGV_RELEASE_TYPE" == "snapshot" ]; then
   PACKAGE_DISTRIBUTION=devel
